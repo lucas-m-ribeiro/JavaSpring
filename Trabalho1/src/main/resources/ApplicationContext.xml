@@ -5,16 +5,22 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
-    <bean id="pessoa"
-        class="br.gov.sp.fatec.GerarPessoa">
+    <bean id="pessoa" class="br.gov.sp.fatec.GerarPessoa">
         <property name="dados" ref="mensagem"/>
     </bean>
     
-    <bean id="mensagem"
-        class="br.gov.sp.fatec.Pessoa">
+    <bean id="mensagem" class="br.gov.sp.fatec.Pessoa">
         <property name="nome" value="Carlos"/>
         <property name="sobrenome" value="neto"/>
         <property name="idade" value="50"/>
         <property name="telefone" value="129999999"/>
     </bean>
+
+    <bean id="mensagem2" class="br.gov.sp.fatec.Pessoa">
+        <property name="nome" value="Douglas"/>
+        <property name="sobrenome" value="Ribeiro"/>
+        <property name="idade" value="21"/>
+        <property name="telefone" value="13999999999"/>
+    </bean>
+
 </beans>

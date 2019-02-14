@@ -18,12 +18,18 @@ public class Main {
 		GerarPessoa gp = (GerarPessoa) context.getBean("pessoa");
 		System.out.println(gp.gerar());
 		
-		 Pessoa p = (Pessoa) context.getBean("mensagem"); 
-	     p.setNome("Maria");
-	     p.setSobrenome("alvez");
-	     p.setIdade(50);
-	     p.setTelefone("121211212");
-	     System.out.println(p.getDados());
+		Pessoa p = (Pessoa) context.getBean("mensagem"); 
+	     	
+		p.setNome("Maria");
+	     	p.setSobrenome("alvez");
+	     	p.setIdade(50);
+	     	p.setTelefone("121211212");
+	     	System.out.println(p.getDados());
+
+		Pessoa p2 = (Pessoa) context.getBean("mensagem2");
+		System.out.println(p.getDados());
+		
+		
 	     context.close();
 	}
 
