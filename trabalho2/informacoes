@@ -1,0 +1,34 @@
+create schema banco;
+
+use banco;
+
+create table pessoa (
+  id bigint unsigned not null auto_increment,
+  nome varchar(20) not null,
+  cpf varchar(50) not null,
+  endereco varchar(100) not null,
+  estado varchar(50) not null,
+  sexo varchar(50) not null,
+  constraint pessoa_pk primary key (id),
+  constraint cpf_uk unique key (cpf)
+);
+
+create table livro (
+  id bigint unsigned not null auto_increment,
+  nome varchar(20) not null,
+  autor varchar(100) not null,
+  descricao varchar(200) not null,
+  categoria varchar(50) not null,
+  pessoa_id bigint unsigned not null,
+  foreign key pessoa_fk (pessoa_id) references pessoa (id) on delete restrict on update cascade,
+  constraint id_pk primary key (id),
+  constraint nome_uk unique key (nome)
+);
+
+create table pessoa_livro (
+  pessoa_id bigint unsigned not null,
+  livro_id bigint unsigned not null,
+  primary key (pessoa_id, livro_id),
+  foreign key pessoa_fk (pessoa_id) references pessoa (id) on delete restrict on update cascade,
+  foreign key livro_fk (livro_id) references livro (id) on delete restrict on update cascade
+);
