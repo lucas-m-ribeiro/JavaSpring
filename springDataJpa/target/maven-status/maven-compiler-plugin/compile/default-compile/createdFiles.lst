@@ -1,0 +1,7 @@
+br/gov/sp/fatec/model/Usuario.class
+br/gov/sp/fatec/repository/AutorizacaoRepository.class
+br/gov/sp/fatec/model/Autorizacao.class
+br/gov/sp/fatec/App.class
+br/gov/sp/fatec/repository/UsuarioRepository.class
+br/gov/sp/fatec/service/UsuarioService.class
+br/gov/sp/fatec/service/UsuarioServiceImpl.class
