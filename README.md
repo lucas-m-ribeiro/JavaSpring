@@ -23,12 +23,11 @@ but there are extensions for building web applications on top of the Java EE pla
   <li>Um repositório  para  cada  entidade  criada  com  pelo  menos  2  consultas  cada 
 um: uma com query method e outra com @Query;</li>
 
-  <li>No  mínimo,  1  serviço  que  utiliz
-  e  as  duas  entidades  e  faça  uso  de  transações. 
+  <li>No  mínimo,  1  serviço  que  utilize as duas entidades e faça uso de transações. 
   Um  serviço  deve  receber  parâmetros  e/ou  retornar  dados.  Um  serviço  deve 
   conter as regras de negócio da aplicação;</li>
 
-  <li>Todas as dependências injetadas utilizando Spring;/li>
+  <li>Todas as dependências injetadas utilizando Spring;</li>
 
    <li>Testes de unidade para 1 repositório e 1 se
   rviço. No mínimo, dois testes para o 
