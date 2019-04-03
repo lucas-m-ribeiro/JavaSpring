@@ -34,12 +34,11 @@ http://www.linhadecodigo.com.br/artigo/3418/inversao-de-controle-ioc-e-injecao-d
 <ul>
     <li>Escolha uma pasta para o projeto</li>
     <li>No prompt de comando digite:</li>
-<ul>
+</ul>
 
 ```
 mvn archetype:generate -DgroupId=br.gov.sp.fatec -DartifactId=springExample1 -
 DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
-
 ```
 Entre na pasta criada (springExample1) edite o arquivo pom.xml,incluindo as dependências básicas do Spring:
 
