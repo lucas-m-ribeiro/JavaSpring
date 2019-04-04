@@ -22,25 +22,23 @@ import com.fatec.api.model.View;
 import com.fatec.api.repository.ProdutoRepository;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping(path = "/api", produces= {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class ProdutoResources {
 	
 	@Autowired
 	ProdutoRepository pr;
 	
 	//salva produto
-	
 	@RequestMapping(value="/save", method=RequestMethod.POST)
 	public ResponseEntity<Produto> salvarProduto(@RequestBody Produto produto, HttpServletRequest request, HttpServletRequest response) {
 		if(produto == null) {			
-			return new ResponseEntity<Produto>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<Produto>(HttpStatus.BAD_REQUEST);
 		}
 		produto = pr.save(produto);
 		return new ResponseEntity<Produto>(produto, HttpStatus.OK);
 	}
 	
 	//pesquisa produto por id
-	
 	@GetMapping("/produto/{id}")
 	@JsonView(View.ProdutoSemId.class)
 	public ResponseEntity<Produto> listarProdutoUnico(@PathVariable(value="id")long id) {
@@ -52,7 +50,6 @@ public class ProdutoResources {
 	}
 	
 	//lista todos os produtos
-	
 	@GetMapping("/produto")
 	@JsonView(View.ProdutoCompleto.class)
 	public ResponseEntity<Collection<Produto>> listarProdutos(){
