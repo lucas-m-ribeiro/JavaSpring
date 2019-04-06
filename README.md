@@ -474,3 +474,385 @@ um: uma com query method e outra com @Query;</li>
 
 </ul>
 
+# Rest
+
+REST é a abreviação para REpresentational State Transfer.
+
++ Princípios fundamentais:
+
++ Protocolo cliente/servidor sem estado (stateless): cada requisição
+HTTP contém toda a informação necessária (nao manter sessão).
+
++ Um conjunto de informações padrão bem definidas: POST, GET, PUT,
+DELETE, HEAD e OPTIONS
+
++ Cada recurso deve possuir um identificador único (URI)
+
++ Uso de hipermídia (links)
+
++ Recursos (serviços) com múltiplas representações (formatos de
+retorno, como JSON ou XML)
+
++ Um webservice é dito RESTful se ele adere aos princípios
+fundamentais
+
+### Rest com Spring
+
+O Spring fornece suporte a REST por meio do framework Spring MVC e, utilizando o Spring Boot, basta incluir o starter web e o Jackson (suporte a XML) no arquivo "pom.xml".
+
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+    <groupId>com.fasterxml.jackson.dataformat</groupId>
+    <artifactId>jackson-dataformat-xml</artifactId>
+</dependency>
+```
+
++ Também é preciso configurar a porta e o path no arquivo **application.properties**
+
+```
+## Server
+server.port=8081
+server.servlet.context-path=/springRest
+```
+
+O trecho de código abaixo mostra um exemplo de controller REST:
+
+```
+@RestController
+@RequestMapping(value = "/usuario")
+public class UsuarioController {
+
+@Autowired
+private UsuarioService usuarioService;
+
+@RequestMapping(value = "/get/{nome}")
+@JsonView(View.All.class)
+public ResponseEntity<Collection<Usuario>> pesquisar(@PathVariable("nome") String nome) {
+    return new ResponseEntity<Collection<Usuario>>(usuarioService.buscar(nome), HttpStatus.OK);
+}
+
+@RequestMapping(value = "/getById")
+@JsonView(View.All.class)
+public ResponseEntity<Usuario> get(@RequestParam(value="id", defaultValue="1") Long id) {
+    Usuario usuario = usuarioService.buscar(id);    
+    if(usuario == null) {
+        return new ResponseEntity<Usuario>(HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<Usuario>(usuario, HttpStatus.OK);
+}
+```
+O trecho de código abaixo mostra um exemplo de controller REST (cont):
+
+```
+@RequestMapping(value = "/getAll")
+@JsonView(View.Alternative.class)
+public ResponseEntity<Collection<Usuario>> getAll() {
+    return new ResponseEntity<Collection<Usuario>>(usuarioService.todos(), HttpStatus.OK);
+}
+
+// Voce pode informar o metodo e o tipo de retorno produzido
+@RequestMapping(value = "/save", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+@JsonView(View.All.class)
+// E possivel indicar o status por anotacao, mas sera fixo, sem possibilidade de tratar erros
+@ResponseStatus(HttpStatus.CREATED)
+
+public Usuario save(@RequestBody Usuario usuario, HttpServletRequest request, HttpServletResponse response) {
+    usuario = usuarioService.salvar(usuario);
+    response.addHeader("Location", request.getServerName() + ":" + request.getServerPort() +
+    request.getContextPath() + "/usuario/getById?id=" + usuario.getId());
+    return usuario;
+    }
+}
+```
+
+Vamos repassar as anotações gerais da classe:
+
++ A anotação **"@RestController"** encapsula diversas outras anotações e, basicamente, indica que essa classe implementa webservices RESTful
+
++ A anotação **"@RequestMapping"** permite estabelecer uma URI geral para todos os serviços contidos na classe. No exemplo, todos os
+serviços da classe terão uma URI iniciada em "/usuario
+
+Vamos agora discutir o serviço 1:
+
+```
+@RequestMapping(value = "/get/{nome}")
+@JsonView(View.All.class)
+public ResponseEntity<Collection<Usuario>> pesquisar(@PathVariable("nome") String nome) {
+    return new ResponseEntity<Collection<Usuario>>(usuarioService.buscar(nome), HttpStatus.OK);
+}
+```
+
++ Atende pela URI "/usuario/get/{nome}" e retorna os usuários cujo nome contenha "{nome}". Reparem que o nome do método não influi
+na URI do serviço;
+
++ A anotação @JsonView(View.All.class) indica a View a utilizar para gerar a resposta do serviço (um JSON). Mais sobre isso adiante
+
++ O retorno do método é encapsulado por uma ResponseEntity, que permite, além do objeto retornado, informar um HttpStatus
+
++ O parâmetro "nome" do método é ligado à variável a parte "{nome}" da URI
+
++ **Uma chamada para a URI "/usuario/get/teste" chamaria o método "pesquisar" com o parâmetro "nome" com valor "teste"**
+
++ **A serialização/desserialização é completamente automática!**
+
+Vamos agora discutir o serviço 2:
+
+```
+@RequestMapping(value = "/getById")
+@JsonView(View.All.class)
+public ResponseEntity<Usuario> get(@RequestParam(value="id", defaultValue="1") Long id) {
+    Usuario usuario = usuarioService.buscar(id);
+    if(usuario == null) {
+        return new ResponseEntity<Usuario>(HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<Usuario>(usuario, HttpStatus.OK);
+}
+```
+
++ Atende pela URI **"/usuario/getById?id={id}"** e retorna o usuário com o id passado como parâmetro
+
++ O parâmetro de entrada "id" vem por meio da URI (requisição GET) e, por isso, é preciso anotá-lo com @RequestParam
+
++ A configuração **"(value="id", defaultValue="1")** indica que o nome do parâmetro na URL é "id" e, caso não seja especificado, possuirá valor "1"
+
++ **Uma chamada para a URI "/usuario/getById?id=2" chamaria o método "get" com o parâmetro "id" com valor "2"**
+
++ Nesse serviço o HttpStatus retornado varia com o resultado da busca
+
+Vamos agora discutir o serviço 3:
+
+```
+@RequestMapping(value = "/getAll")
+@JsonView(View.Alternative.class)
+public ResponseEntity<Collection<Usuario>> getAll() {
+    return new ResponseEntity<Collection<Usuario>>(usuarioService.todos(), HttpStatus.OK);
+}
+```
++ Atende pela URI "/usuario/getAll", sem nenhum parâmetro, e retorna todos os usuários cadastrados
+
+Vamos agora discutir o serviço 4:
+
+```
+// Voce pode informar o metodo e o tipo de retorno produzido
+
+@RequestMapping(value = "/save", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+@JsonView(View.All.class)
+
+// E possivel indicar o status por anotacao, mas sera fixo, sem possibilidade de tratar erros
+
+@ResponseStatus(HttpStatus.CREATED)
+public Usuario save(@RequestBody Usuario usuario, HttpServletRequest request, HttpServletResponse response) {
+    usuario = usuarioService.salvar(usuario);
+    response.addHeader("Location", request.getServerName() + ":" + request.getServerPort() +
+    request.getContextPath() + "/usuario/getById?id=" + usuario.getId());
+        return usuario;
+}
+```
+
++ Atende pela URI **"/usuario/save"**
+
++ Os parâmetros de entrada vêm como JSON no "body" da requisição e, por isso, é preciso anotar o parâmetro "usuario" como @RequestBody
+
++ Definimos para esse serviço que o método de requisição deve ser POST ("method = RequestMethod.POST") e ele produz um JSON
+("produces = MediaType.APPLICATION_JSON_VALUE)").
+
++ **Podemos omitir o método de acesso substituindo a anotação @RequestMapping por @PostMapping, @GetMapping, etc**
+
++ Para esse serviço retornamos um HttpStatus fixo ("@ResponseStatus(HttpStatus.CREATED") **Isso não é uma boa prática!**
+
++ Os parâmetros "HttpServletRequest request" e "HttpServletResponse response" são carregados automaticamente (não é necessário nenhuma alteração na requisição) e permite acessar dados da requisição (em "request") e alterar dados da resposta (em
+"response")
+
++ Nesse serviço alteramos o cabeçalho da resposta utilizando dados da requisição
+
+### CORS
+
+**Cross-Origin Resource Sharing (CORS)** é uma especificação de uma tecnologia de navegadores que define meios para um
+servidor permitir que seus recursos sejam acessados por uma página web de um domínio diferente.
+
++ Impede que uma rota em um servidor seja acessada por uma página (ou JavaScript) de outro servidor;
+
++ Para habilitar CORS em uma rota basta adicionar a anotação **@CrossOrigin**
+
++ Por padrão, a anotação permite acesso de qualquer destino com os métodos de acesso GET, HEAD e POST
+
++ Para permitir acesso a partir de apenas uma origem, pode-se usar, por exemplo, **@CrossOrigin(origins = "http://www.origem.com:9000")**, Mais de uma origem pode ser especificada!
+
++ É possível definir os métodos permitidos com a opção **methods**, os cabeçalhos permitidos com **allowedHeaders** e os cabeçalhos visíveis (na resposta da rota) com **exposedHeaders**
+
+### Serialização
+
+Não é preciso qualquer código adicional para realizar a serialização/desserialização com JSON ao utilizar o Spring Boot. Por outro lado, é possível criar diferentes visualizações (View) para uma mesma classe. Ou seja, permitir que, para diferentes serviços, diferentes campos de uma classe sejam serializado
+
+Para controlar nossas Views, criaremos a classe abaixo:
+
+```
+package br.gov.sp.fatec.view;
+/**
+* Esta classe define as diferentes visualizacoes disponiveis para serializacoes
+*/
+public class View {
+/**
+* Visualizacao principal com os principais atributos
+*/
+    public static class UsuarioResumo {
+    }
+    /**
+    * Visualizacao com todos os atributos
+    * Inclui tudos os atributos marcados com UsuarioResumo
+    */
+    public static class UsuarioCompleto extends UsuarioResumo {
+    }
+    /**
+    * Visualizacao alternativa
+    */
+    public static class UsuarioResumoAlternativo {
+    }
+}
+```
+São pontos de interesse da classe View: 
+ 
++ Ela apresenta diversas subclasses: UsuarioResumo, UsuarioCompleto e UsuarioResumoAlternativo
+
++ **O nome da classe e das subclasses não importam. O importante é entender que cada subclasse representa uma marcação (label)**
+
++ A subclasse UsuarioCompleto estende a subclasse UsuarioResumo. Isso indica que todos os atributos marcados com UsuarioResumo
+também são automaticamente marcados com UsuarioCompleto
+
+Vamos ver um uso de View na classe "Usuario":
+
+```
+public class Usuario{
+@Id
+@GeneratedValue(strategy=GenerationType.IDENTITY)
+@Column(name = "USR_ID")
+@JsonView({View.UsuarioCompleto.class, View.UsuarioResumoAlternativo.class})
+private Long id;
+
+@Column(name = "USR_NOME", unique=true, length = 20, nullable = false)
+@JsonView({View.UsuarioResumo.class, View.UsuarioResumoAlternativo.class})
+private String nome;
+
+}
+```
++ Usamos a anotação @JsonView nos atributos que desejamos serializar.
+
++ O atributo "id" será serializado quando a classe de View escolhida for View.UsuarioCompleto ou View.UsuarioResumoAlternativo
+
++ O atributo "nome" será serializado quando a classe de View escolhida for View.UsuarioResumo ou View.UsuarioResumoAlternativo
+
++ **Como View.UsuarioCompleto estende View.UsuarioResumo, o atributo "nome" também será serializado quando a classe de View escolhida for View.UsuarioCompleto**
+
+Vamos ver um uso de View na classe "Usuario“ (cont.):
+
+```
+@ManyToMany(fetch = FetchType.EAGER)
+@JoinTable(name = "UAU_USUARIO_AUTORIZACAO",
+    joinColumns = { @JoinColumn(name = "USR_ID") },
+    inverseJoinColumns = { @JoinColumn(name = "AUT_ID") })
+@JsonView({View.UsuarioResumo.class, View.UsuarioResumoAlternativo.class})
+private List<Autorizacao> autorizacoes;
+```
+
+**Anotar a lista de autorizações não significa que atributos da classe
+“Autorizacao” serão apresentados!**
+
+**É preciso anotar também os atributos desejados na classe
+“Autorizacao” ou o resultado seria algo similar a: **
+
+
+```
+[
+    {
+        "id": 4,
+        "nome": "teste",
+        "autorizacoes": [
+        {},
+        {}
+        ]
+    }
+]
+```
++ **É possível perceber que existem duas autorizações associadas, mas nenhum atributo será exibido**
+
+Em um serviço REST, basta indicar qual View deve ser utilizada para formatar o retorno:
+
+```
+@RequestMapping(value = "/get/{nome}", method = RequestMethod.GET)
+@JsonView(View.UsuarioCompleto.class)
+public ResponseEntity<Collection<Usuario>> pesquisar(@PathVariable("nome") String nome) {
+    return new ResponseEntity<Collection<Usuario>>(usuarioService.buscar(nome), HttpStatus.OK);
+}
+```
+JSON resultante:
+
+```
+[
+    {
+            "id": 4,
+            "nome": "teste",
+            "autorizacoes": [
+            {
+                "nome": "ROLE_USUARIO"
+            },
+            {
+                 "nome": "ROLE_ADMIN"
+            }
+        ]
+    }
+]
+
+```
+
+**Somente o atributo “nome” foi anotado com “Vies.UsuarioCompleto” na classe “Autorizacao”**
+
+Também pode-se fazer marshalling/unmarshalling (XML):
+
+```
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
+@Entity
+@Table(name = "USR_USUARIO")
+public class Usuario{
+.
+.
+.
+@ManyToMany(fetch = FetchType.EAGER)
+@JoinTable(name = "UAU_USUARIO_AUTORIZACAO",
+    joinColumns = { @JoinColumn(name = "USR_ID") },
+    inverseJoinColumns = { @JoinColumn(name = "AUT_ID") })
+@JsonView({View.Main.class, View.Alternative.class})
+@XmlElement(name = "autorizacao")
+private List<Autorizacao> autorizacoes;
+```
++ Ao usar anotações JAXB (Java Architecture for XML Binding) permitimos que os serviços também aceitem XML
+
++ **@XmlRootElement** define o elemento raiz para uma árvore XML
+
++ **@XmlAccessorTye(XmlAccessType.FIELD)** indica que os atributos devem compor o XML por padrão (sem necessidade de anotação, desde que
+possuam um getter de mesmo nome);
+
++ **@XmlElement**, nesse exemplo, permite renomear o atributo no XML;
+
+### Teste
+
+Para testar nossos serviços utilizaremos a extensão Postman do Google Chrome que, entre outras coisas, permite:
+
++ Criar e enviar uma requisição completa, permitindo alterar tipo (GET, POST, etc), parâmetros, cabeçalhos (headers), corpo (body), etc
+
++ Verificar todos os detalhes da resposta recebida, como status, cabeçalhos (headers), corpo (body), cookies, etc;
+
+# Trabalho 3
+
+Crie uma API RESTful para seus serviços. A API deve contar com, pelo menos:
+
++ Uma rota para cadastro, que recebe um JSON e cadastra um registro. Em caso de erro, deve ser retornado um Status de erro apropriado;
+
+
++ Uma rota que retorna um registro, por meio de seu ID, em formato JSON e XML. Utilizar JSON View para não retornar o atributo ID; e
+
++ Uma rota que permite uma consulta aos registros criados. Essa rota deve obrigatoriamente poder retornar mais de um registro e deve receber mais de um parâmetro de busca. Utilizar JSON View para não apresentar alguns dos atributos (o ID deve ser apresentado).
