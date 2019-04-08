@@ -6,4 +6,5 @@ import com.fatec.api.model.Produto;
 
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 	Produto findById(long id);
+	Produto findByNomeAndPreco(String nome, double preco);
 }

@@ -32,7 +32,7 @@ public class ProdutoResources {
 	@RequestMapping(value="/save", method=RequestMethod.POST)
 	public ResponseEntity<Produto> salvarProduto(@RequestBody Produto produto, HttpServletRequest request, HttpServletRequest response) {
 		if(produto == null) {			
-			return new ResponseEntity<Produto>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<Produto>(HttpStatus.NOT_FOUND);
 		}
 		produto = pr.save(produto);
 		return new ResponseEntity<Produto>(produto, HttpStatus.OK);
@@ -49,10 +49,21 @@ public class ProdutoResources {
 		return new ResponseEntity<Produto>(produto, HttpStatus.OK);
 	}
 	
-	//lista todos os produtos
-	@GetMapping("/produto")
-	@JsonView(View.ProdutoCompleto.class)
-	public ResponseEntity<Collection<Produto>> listarProdutos(){
-		return new ResponseEntity<Collection<Produto>>(pr.findAll(), HttpStatus.OK);	
-	}	
-}
+	//pesquisa produto (dois parametros)
+		@GetMapping("/produto/{nome}/{preco}")
+		@JsonView(View.ProdutoSemId.class)
+		public ResponseEntity<Produto> listarProdutoUnico(@PathVariable(value="nome")String nome, @PathVariable(value="preco")double preco) {
+			Produto produto = pr.findByNomeAndPreco(nome, preco);
+			if(produto == null) {
+				return new ResponseEntity<Produto>(HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<Produto>(produto, HttpStatus.OK);
+		}
+	
+		//lista todos os produtos
+		@GetMapping("/produto")
+		@JsonView(View.ProdutoCompleto.class)
+		public ResponseEntity<Collection<Produto>> listarProdutos(){
+			return new ResponseEntity<Collection<Produto>>(pr.findAll(), HttpStatus.OK);	
+		}	
+	}
