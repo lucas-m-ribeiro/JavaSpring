@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="teste">
+        <input type="text" v-model="m" >
+        <button type="button" v-on:click="teste2">salvar</button>
+        <ul>
+            <li v-for="batata in lista" v-on:click="teste3(batata)">
+                {{
+                  batata
+                }}
+            </li>
+        </ul>
+    </div>
+
+    <script src="http://unpkg.com/vue"></script>
+
+    <script>
+        var teste = new Vue({
+            
+            el:"#teste",
+            
+            data:{
+                m:"",
+                lista: []
+            },
+            
+            methods:{
+                
+                teste2(){
+                    if (this.m == ""){
+                        alert('Campo vazio!');
+                    }
+                    else{
+                        this.lista.push(this.m);
+                        this.m = "";
+                    }
+                },
+
+                teste3(batata){
+                    this.lista.pop(batata);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
