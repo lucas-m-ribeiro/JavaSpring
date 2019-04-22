@@ -8,7 +8,7 @@
 </head>
 <body>
     <div id="teste">
-        <input type="text" v-model="m" >
+        <input type="text" v-model="m" v-on:keyup.enter="teste2">
         <button type="button" v-on:click="teste2">salvar</button>
         <ul>
             <li v-for="batata in lista" v-on:click="teste3(batata)">
@@ -44,7 +44,8 @@
                 },
 
                 teste3(batata){
-                    this.lista.pop(batata);
+                    var i = this.lista.indexOf(batata);
+                    this.lista.splice(i,1);
                 }
             }
         });
